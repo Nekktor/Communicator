@@ -14,8 +14,8 @@ class Users(Base):
     birthday = Column(Date)
     avatar_url = Column(Text)
     date_created = Column(Date, server_default=func.current_date())
-    # last_time_online = Column(DateTime, server_default=text("date_trunc('minute', CURRENT_TIMESTAMP)"))  #  Если postgresql
-    last_time_online = Column(DateTime, server_default=text("datetime(strftime('%Y-%m-%d %H:%M:00', 'now'))"))  # Если не postgresql
+    last_time_online = Column(DateTime, server_default=text("date_trunc('minute', CURRENT_TIMESTAMP)"))  #  Если postgresql
+    # last_time_online = Column(DateTime, server_default=text("datetime(strftime('%Y-%m-%d %H:%M:00', 'now'))"))  # Если не postgresql
     phone = Column(String(20), unique=True)
     email = Column(String(254), unique=True)
 

@@ -11,7 +11,6 @@ class UserRoleEnum(Enum):
     pre_admin = "Пре-админ"
     admin = "Админ"
 
-
 # Таблица chats
 class Participants(Base):
     __tablename__ = 'participants'

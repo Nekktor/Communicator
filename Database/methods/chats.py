@@ -1,9 +1,15 @@
+from Database.methods.basic_methods import BasicMethods
 from Database.methods.init import *
-from Database.init import Session
 from sqlalchemy.orm import Session
+from datetime import date
 
 
 # Sql-запросы у таблице chats
-class ChatsRequests:
+class ChatsRequests(BasicMethods[Chats]):
     def __init__(self, session: Session):
-        self.session = session
+        super().__init__(session, Chats)  # Инициализация базовых четырёх методов
+
+    # Чтобы были подсказки
+    def add(self, name: str, avatar_url: str = None, date_created: date = None):
+        return super().add(name=name, avatar_url=avatar_url, date_created=date_created)
+
