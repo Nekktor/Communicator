@@ -1,5 +1,3 @@
-from connection import Connection
-
 class User:
     _instance = None
 
