@@ -5,6 +5,7 @@
 from Database.main import Session, DataBase
 from Database.models.participants import UserRoleEnum
 from Database.models.messages import MessageTypeEnum
+from datetime import date
 
 
 def health_check_users(db):
@@ -21,7 +22,7 @@ def health_check_users(db):
     views()
 
     # db.users.add(name='Никита', username='Nikita', lastname='Соколов',
-    #              birthday=datetime.date(2011, 1, 11), phone='89012345678', email='mail@yandex.ru')
+    #              birthday=date(2011, 1, 11), phone='89012345678', email='mail@yandex.ru')
     # db.users.add(name='Сева', username='Seva', lastname=None, birthday=None, phone='89876543210', email=None)
     # db.users.add(name='Юра', username='Yura', lastname='Мельник', birthday=None, phone=None, email=None)
     # db.users.add(name='Юра2', username='Yura2', lastname='Мельник',
