@@ -28,10 +28,11 @@ class SignUpPage:
             cls._instance.username_entry = tk.Entry(cls._instance.sign_up_page, font=("Arial", 12))
 
             # Кнопка подтверждения введённых данных
-            cls._instance.submit_button = tk.Button(cls._instance.sign_up_page, text="Создать аккаунт", width=25, height=3, command=cls._instance.register)
+            cls._instance.submit_button = tk.Button(cls._instance.sign_up_page, text="Подтвердить", width=25, height=3, command=cls._instance.register)
 
-            # Кнопка для входа в созданный аккаунт
-            cls._instance.login_button = tk.Button(cls._instance.sign_up_page, text="Войти в аккаунт", width=25, height=3, command=cls._instance.login)
+            # Кнопки для смены производимого действия
+            cls._instance.login_button = tk.Button(cls._instance.sign_up_page, text="Войти в аккаунт", width=25, height=3, command=cls._instance.show_login_interface)
+            cls._instance.register_button = tk.Button(cls._instance.sign_up_page, text="Зарегистрироваться", width=25, height=3, command=cls._instance.show_register_interface)
 
             # Надпись для показа ошибок
             cls._instance.error_label = tk.Label(cls._instance.sign_up_page, font=("Arial", 12), fg='red')
@@ -52,6 +53,42 @@ class SignUpPage:
     def error_callback(self, error):
         self.error_label.config(text=error)
         self.error_label.pack(side='bottom', pady=10)
+
+    def show_login_interface(self):
+        # Скрываем поле для ввода имени
+        self.name_entry_label.pack_forget()
+        self.name_entry.pack_forget()
+
+        # Заменяем кнопку для переключения операций
+        self.login_button.place_forget()
+        self.register_button.place(x=100, y=500)
+
+        # Выводим для пользователя название текущей операции
+        self.process_label.config(text='Вход в аккаунт')
+
+        # Изменяем функцию кнопки подтверждения на авторизацию
+        self.submit_button.config(command=self.login)
+
+    def show_register_interface(self):
+        # Убираем старое поле ввода имени пользователя, т.к. оно нарушит порядок
+        self.username_entry_label.pack_forget()
+        self.username_entry.pack_forget()
+
+        # Выстраиваем UI для регистрации
+        self.name_entry_label.pack(side='top', pady=20)
+        self.name_entry.pack(side="top", pady=10)
+        self.username_entry_label.pack(side='top', pady=10)
+        self.username_entry.pack(side='top', pady=10)
+
+        # Заменяем кнопку для переключения операций
+        self.register_button.place_forget()
+        self.login_button.place(x=100, y=500)
+
+        # Выводим для пользователя название текущей операции
+        self.process_label.config(text='Создание аккаунта')
+
+        # Изменяем функцию кнопки подтверждения на регистрацию
+        self.submit_button.config(command=self.register)
 
     def show_sign_up_page(self):
         self.sign_up_page.pack(fill='both', expand=True)
