@@ -8,7 +8,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-engine = create_engine("postgresql+psycopg2://postgres:Sokol_12@localhost:5432/postgres")  # Если есть postgresql
-# engine = create_engine("sqlite:///mydb.db")  # Если нет postgresql
+
+connection = ("postgresql://admin:bbqb5ON9TyrL7UwHbITyDT22ILByL0fU@dpg-d76in4hr0fns73cbkjk0-"
+              "a.oregon-postgres.render.com/main_database_4beq")  # Удалённая БД (render.com)
+# connection = "postgresql+psycopg2://postgres:Sokol_12@localhost:5432/postgres"  # Локальная БД
+engine = create_engine(connection)
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
