@@ -16,3 +16,10 @@ engine = create_engine(connection)
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
 
+"""
+# Удаление всех таблиц. :)
+from sqlalchemy import MetaData
+metadata = MetaData()
+metadata.reflect(bind=engine)        # загрузить существующие таблицы
+metadata.drop_all(bind=engine)      # удалить все отражённые таблицы
+"""
