@@ -12,4 +12,3 @@ class ChatsRequests(BasicMethods[Chats]):
     # Чтобы были подсказки
     def add(self, name: str, avatar_url: str = None):
         return super().add(name=name, avatar_url=avatar_url)
-

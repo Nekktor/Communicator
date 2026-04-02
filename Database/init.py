@@ -15,3 +15,4 @@ connection = ("postgresql://admin:bbqb5ON9TyrL7UwHbITyDT22ILByL0fU@dpg-d76in4hr0
 engine = create_engine(connection)
 Base = declarative_base()
 Session = sessionmaker(bind=engine)
+

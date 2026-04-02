@@ -13,6 +13,16 @@ class BasicMethods(Generic[T]):
         self.session = session
         self.model = model
 
+    @staticmethod
+    def __get_attributes(obj):
+        attrs = {}
+
+        # перебор через dir() и getattr, пропуская исключения и приватные, если нужно
+        for name in dir(obj):
+            if name.startswith('_'):
+                continue
+            attrs[name] = getattr(obj, name)
+        return attrs
 
     def _get_column(self, attr_name: str) -> Column | AttributeError:
         """
@@ -56,7 +66,21 @@ class BasicMethods(Generic[T]):
         :return: список классов таблицы
         """
 
-        return self.session.scalars(select(self.model)).all()
+        raw_users = self.session.scalars(select(self.model)).all()
+        structured_users = list()
+        for user in raw_users:
+            user_dict = self.__get_attributes(user)
+            for key, value in user_dict.copy().items():  # Проверка элементов на экземпляр класса
+                # Если не объект класса "sqlalchemy" или список, то возращаем
+                type_attr = getattr(value, '__module__', '')
+                if type_attr.startswith('sqlalchemy.') or type_attr.startswith('Database.'):
+                    # Если нужны связанные строки из других таблиц -
+                    # and not isinstance(value, InstrumentedList)
+                    del user_dict[key]
+
+            structured_users.append(user_dict)
+
+        return structured_users
 
     def update(self, id: int, attr_name: str, value: Any) -> None:
         """
