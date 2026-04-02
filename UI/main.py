@@ -16,31 +16,50 @@ class App:
         self.chatting_page = ChattingPage(self.root, self.switch_to_adding_page)
         self.adding_page = AddingPage(self.root, self.switch_to_chatting_page, self.on_chat_adding_submit)
         self.sign_up_page = SignUpPage(self.root, self.register_user, self.login_user)
+
+        # Переменная отвечающая за название текущей страницы (сначала - start_page)
+        self.current_page = 'start_page'
+
+        # Переменная содержит в себе экземпляр класса User, либо None, если ни регистрация ни вход не были произведены
         self.user = None
 
-    def remove_pages(self):
+    def remove_pages(self) -> None:
         self.start_page.hide_start_page()
         self.adding_page.hide_adding_page()
         self.chatting_page.hide_chatting_page()
         self.sign_up_page.hide_sign_up_page()
 
-    def switch_to_chatting_page(self):
+    def switch_to_chatting_page(self) -> None:
         self.remove_pages()
         self.chatting_page.show_chatting_page()
+        self.current_page = 'chatting_page'
 
-    def switch_to_sign_up_page(self):
+    def switch_to_sign_up_page(self) -> None:
         self.remove_pages()
         self.sign_up_page.show_sign_up_page()
+        self.current_page = 'sign_up_page'
 
-    def switch_to_adding_page(self):
+    def switch_to_adding_page(self) -> None:
         self.remove_pages()
         self.adding_page.show_adding_page()
+        self.current_page = 'adding_page'
 
-    def on_chat_adding_submit(self):
-        # Здесь должна находится логика для добавления данных чата в БД
+    def get_current_page(self) -> str:
+        """
+        Метод возвращает название текущей страницы пользователя в строковом типе
+        :return: str
+        """
+        return self.current_page
+
+    def on_chat_adding_submit(self) -> None:
+        """
+        Метод используемый кнопкой подтверждения создания нового чата,
+        здесь реализована логика добавления нового чата в БД
+        :return: None
+        """
         pass
 
-    def register_user(self):
+    def register_user(self) -> None:
         user_name = self.sign_up_page.name_entry.get()
         user_username = self.sign_up_page.username_entry.get()
 
@@ -61,7 +80,7 @@ class App:
         self.remove_pages()
         self.chatting_page.show_chatting_page()
 
-    def login_user(self):
+    def login_user(self) -> None:
         user_username = self.sign_up_page.username_entry.get()
 
         self.user = User('', user_username)
@@ -72,11 +91,13 @@ class App:
             self.user.name = user_data['name']
             self.user.username = user_data['username']
 
+            self.remove_pages()
             self.chatting_page.show_chatting_page()
         else:
             self.user = None
 
         # Временная мера
+        self.remove_pages()
         self.chatting_page.show_chatting_page()
 
     def sign_up_error_callback(self, error: str):
