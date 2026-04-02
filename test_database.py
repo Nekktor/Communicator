@@ -1,5 +1,5 @@
 """
-Файл основного кода.
+Файл основного кода
 """
 
 from Database.main import Session, DataBase
