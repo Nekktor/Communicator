@@ -2,7 +2,7 @@ import json
 
 import websockets
 import asyncio
-
+import test_database
 class Server():
     def __init__(self):
         self.connected_clients = set()
@@ -20,14 +20,19 @@ class Server():
             for c in self.connected_clients:
                 c.close()
 
-    async def auth(self, id_task, websocket, temp_id):
+    async def auth(self, id_task, websocket, name, username, lastname):
         #print("Возвращаем OK")
-        await websocket.send(json.dumps({"id_task": id_task, "response" : "OK"}))
+        try:
+            await test_database.test() # здесь вызвать метода проверки возможности добавления пользователя с пааметрами name, username, lastname (они будут равны = ["Никита2", "Nikitka", "Соколов2"])
+            await websocket.send(json.dumps({"id_task": id_task, "response": username}))
+        except:
+            await websocket.send(json.dumps({"id_task": id_task, "response": "Fall"}))
+        #await websocket.send(json.dumps({"id_task": id_task, "response" : "OK"}))
         #print("Вернули")
 
 
     async def start_server(self):
-        async with websockets.serve(self.handler, "localhost", 8765):
+        async with websockets.serve(self.handler, "localhost", 8080):
             #print("Server started")
             await asyncio.Future()
 
