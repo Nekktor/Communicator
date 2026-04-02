@@ -10,6 +10,6 @@ class ChatsRequests(BasicMethods[Chats]):
         super().__init__(session, Chats)  # Инициализация базовых четырёх методов
 
     # Чтобы были подсказки
-    def add(self, name: str, avatar_url: str = None, date_created: date = None):
-        return super().add(name=name, avatar_url=avatar_url, date_created=date_created)
+    def add(self, name: str, avatar_url: str = None):
+        return super().add(name=name, avatar_url=avatar_url)
 

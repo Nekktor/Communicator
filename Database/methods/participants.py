@@ -26,7 +26,7 @@ class ParticipantsRequests(BasicMethods[Participants]):
         participant = self.session.get(Participants, (chat_id, user_id))  # Получение участника группы
         self.session.delete(participant)  # Удаление участника
 
-        print(f'Запись в таблице {self.model.__name__} с id {id} удалёна')
+        print(f'Запись в таблице {self.model.__name__} с chat_id {chat_id} и user_id {user_id} удалёна')
 
     def update(self, chat_id: int, user_id: int, attr_name: str, value: Any) -> None:
         """

@@ -26,13 +26,13 @@ def health_check_users(db):
     # db.users.add(name='Сева', username='Seva', lastname=None, birthday=None, phone='89876543210', email=None)
     # db.users.add(name='Юра', username='Yura', lastname='Мельник', birthday=None, phone=None, email=None)
     # db.users.add(name='Юра2', username='Yura2', lastname='Мельник',
-    #              birthday=datetime.date(2011, 7, 14), phone=None, email=None)
+    #              birthday=date(2011, 7, 14), phone=None, email=None)
     # views()
 
-    # db.users.update(2, 'name', 'Никита')
+    # db.users.update(13, 'name', 'Юрчик')
     # views()
 
-    # db.users.delete(2)
+    # db.users.delete(14)
     # views()
 
 def health_check_chats(db):
@@ -48,13 +48,17 @@ def health_check_chats(db):
 
     views()
 
-    # db.chats.add(name='Сева')
+    # db.chats.add(name='Разработка немыслимого')
+    # db.chats.add(name='ЮН')
+    # db.chats.add(name='НС')
+    # db.chats.add(name='СЮ')
+    # db.chats.add(name='СЮ')
     # views()
 
     # db.chats.update(5, 'avatar_url', '12345')
     # views()
 
-    # db.chats.delete(6)
+    # db.chats.delete(9)
     # views()
 
 def health_check_participants(db):
@@ -62,20 +66,31 @@ def health_check_participants(db):
         print('-' * 150)
         participants = db.participants.select_all()
         for p in participants:
-            print(p.chat_id, p.user_id, p.role, p.joined_at, p.chat, p.user)
+            print(p.chat_id, p.user_id, p.role, p.joined_at, f'Chat: {p.chat}', f'User: {p.user}')
+
+        print('-' * 150)
 
     views()
 
-    # db.participants.add(chat_id=2, user_id=5)
-    # db.participants.add(chat_id=2, user_id=7)
-    # db.participants.add(chat_id=3, user_id=3)
-    # db.participants.add(chat_id=3, user_id=5)
+    # db.participants.add(chat_id=5, user_id=10)
+    # db.participants.add(chat_id=5, user_id=12)
+    # db.participants.add(chat_id=5, user_id=13)
+
+    # db.participants.add(chat_id=6, user_id=10)
+    # db.participants.add(chat_id=6, user_id=13)
+
+    # db.participants.add(chat_id=7, user_id=10)
+    # db.participants.add(chat_id=7, user_id=12)
+
+    # db.participants.add(chat_id=8, user_id=10)
+    # db.participants.add(chat_id=8, user_id=12)
+    # db.participants.add(chat_id=6, user_id=12)
     # views()
 
-    # db.participants.update(chat_id=1, user_id=5, attr_name='role', value=UserRoleEnum.pre_admin)
+    # db.participants.update(chat_id=5, user_id=10, attr_name='role', value=UserRoleEnum.pre_admin)
     # views()
 
-    # db.participants.delete(chat_id=1, user_id=7)
+    # db.participants.delete(chat_id=6, user_id=12)
     # views()
 
 def health_check_messages(db):
@@ -83,19 +98,26 @@ def health_check_messages(db):
         print('-' * 150)
         messages = db.messages.select_all()
         for m in messages:
-            print(m.id, m.type, m.text, m.file_id, m.chat_id, m.user_id, m.creation_date_time, m.chat, m.sender)
+            print(m.id, m.type, m.text, m.file_id, f'chat_ud: {m.chat_id}', f'user_id: {m.user_id}',
+                  m.creation_date_time, f'chat: {m.chat}', f'sender: {m.sender}')
 
         print('-' * 150)
 
     views()
 
-    # db.messages.add(chat_id=1, user_id=3, text='Привет всем!')
+    # db.messages.add(chat_id=5, user_id=10, text='Привет всем от Никиты!')
+    # db.messages.add(chat_id=5, user_id=12, text='Привет всем от Севы!')
+    # db.messages.add(chat_id=5, user_id=13, text='Привет всем от Юры!')
+    # db.messages.add(chat_id=6, user_id=13, text='Никит, как дела? (от Юры)')
+    # db.messages.add(chat_id=8, user_id=12, text='Юр, как дела? (от Севы)')
+    # db.messages.add(chat_id=5, user_id=12, text='Как удалить это сообщение?')
+    # db.messages.add(chat_id=5, user_id=10, text='Как вам моя БД?')
     # views()
 
-    # db.messages.update(2, 'text', 'Хай!')
+    # db.messages.update(3, 'text', '嗨 everyone!')
     # views()
 
-    # db.messages.delete(2)
+    # db.messages.delete(6)
     # views()
 
 # Создание сессии

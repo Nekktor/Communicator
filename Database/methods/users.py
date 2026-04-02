@@ -11,6 +11,6 @@ class UsersRequests(BasicMethods[Users]):
 
     # Чтобы были подсказки
     def add(self, name: str, username: str, lastname: str = None, birthday: str = date,
-            avatar_url: str = None, date_created: date = None):
+            avatar_url: str = None, phone: str | int = None, email: str = None):
         return super().add(name=name, username=username, lastname=lastname, birthday=birthday,
-                           avatar_url=avatar_url, date_created=date_created)
+                           avatar_url=avatar_url, phone=phone, email=email)
