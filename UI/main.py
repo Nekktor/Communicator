@@ -3,7 +3,7 @@ from start_page import StartPage
 from chatting_page import ChattingPage
 from adding_page import AddingPage
 from sign_up_page import SignUpPage
-from user import User
+from message_view import MessageView
 
 
 class App:
@@ -16,12 +16,10 @@ class App:
         self.chatting_page = ChattingPage(self.root, self.switch_to_adding_page)
         self.adding_page = AddingPage(self.root, self.switch_to_chatting_page, self.on_chat_adding_submit)
         self.sign_up_page = SignUpPage(self.root, self.register_user, self.login_user)
+        self.message = MessageView(self.chatting_page.chat_frame, 'text', 'Напишите своё сообщение')
 
         # Переменная отвечающая за название текущей страницы (сначала - start_page)
         self.current_page = 'start_page'
-
-        # Переменная содержит в себе экземпляр класса User, либо None, если ни регистрация ни вход не были произведены
-        self.user = None
 
     def remove_pages(self) -> None:
         self.start_page.hide_start_page()
@@ -33,6 +31,7 @@ class App:
         self.remove_pages()
         self.chatting_page.show_chatting_page()
         self.current_page = 'chatting_page'
+        self.message.pack(side='bottom', anchor='se', pady=5, padx=5)
 
     def switch_to_sign_up_page(self) -> None:
         self.remove_pages()
@@ -57,24 +56,12 @@ class App:
         здесь реализована логика добавления нового чата в БД
         :return: None
         """
-        pass
+        chat_name = self.adding_page.chat_name_entry.get()
+        participants = self.adding_page.participants_entry.get().split(',')
 
     def register_user(self) -> None:
         user_name = self.sign_up_page.name_entry.get()
         user_username = self.sign_up_page.username_entry.get()
-
-        self.user = User(user_name, user_username)
-
-        if self.user.registration_check(user_username):
-            self.user.add_user(user_name, user_username)
-
-            self.user.name = user_name
-            self.user.username = user_username
-
-            self.remove_pages()
-            self.chatting_page.show_chatting_page()
-        else:
-            self.user = None
 
         # Временная мера
         self.remove_pages()
@@ -82,19 +69,6 @@ class App:
 
     def login_user(self) -> None:
         user_username = self.sign_up_page.username_entry.get()
-
-        self.user = User('', user_username)
-
-        if self.user.login_check(user_username):
-            user_data = self.user.get_user_data(user_username)
-
-            self.user.name = user_data['name']
-            self.user.username = user_data['username']
-
-            self.remove_pages()
-            self.chatting_page.show_chatting_page()
-        else:
-            self.user = None
 
         # Временная мера
         self.remove_pages()

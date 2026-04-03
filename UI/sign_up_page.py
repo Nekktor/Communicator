@@ -1,5 +1,4 @@
 import tkinter as tk
-from database import Database
 
 class SignUpPage:
     _instance = None

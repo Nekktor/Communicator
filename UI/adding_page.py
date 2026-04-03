@@ -1,14 +1,15 @@
 import tkinter as tk
 
-class AddingPage:
+class AddingPage(tk.Frame):
     def __init__(self, master, back_to_chats, on_chat_adding_submit):
         """
-        Интерфэйс обрабатывающий создание нового чата (Надписи могут быть изменены в соответствии с вводимыми данными)
+        UI обрабатывающий создание нового чата (Надписи могут быть изменены в соответствии с вводимыми данными)
 
         :param master: Главное окно Tkinter, находится в main
         :param back_to_chats: Метод, перемещающий пользователя на страницу с чатами, находится в main
         :param on_chat_adding_submit: Метод, отвечающий за обработку данных, введённых пользователем, находится в main
         """
+        super().__init__(master)
         self.master = master
         self.returning = back_to_chats
         self.submitting = on_chat_adding_submit
@@ -18,21 +19,21 @@ class AddingPage:
 
         # Поля для ввода информации для создания
         self.chat_name_entry = tk.Entry(self.adding_page)
-        self.address_entry = tk.Entry(self.adding_page)
+        self.participants_entry = tk.Entry(self.adding_page)
 
         self.chat_name_label = tk.Label(self.adding_page, text='Введите название для чата')
-        self.address_label = tk.Label(self.adding_page, text='Введите имя пользователя')
+        self.participants_label = tk.Label(self.adding_page, text='Перечислите добавляемых пользователей')
 
         # Кнопки перемещения
         self.back_button = tk.Button(self.adding_page, text="Вернуться к чатам", width=25, height=3, command=self.returning)
         self.submit_button = tk.Button(self.adding_page, text="Подтвердить", width=25, height=3, command=self.submitting)
 
         # Размещение элементов на экране
-        self.address_label.pack(side="top", pady=10)
-        self.address_entry.pack(side="top", pady=10)
-
         self.chat_name_label.pack(side="top", pady=10)
         self.chat_name_entry.pack(side="top", pady=10)
+
+        self.participants_label.pack(side="top", pady=10)
+        self.participants_entry.pack(side="top", pady=10)
 
         self.back_button.place(x=100, y=500)
         self.submit_button.place(x=500, y=500)
