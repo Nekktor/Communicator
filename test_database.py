@@ -7,7 +7,6 @@ from Database.models.participants import UserRoleEnum
 from Database.models.messages import MessageTypeEnum
 from datetime import date
 
-
 def health_check_users(db):
     def views():
         print('-' * 150)
