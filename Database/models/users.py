@@ -1,6 +1,7 @@
 from Database.init import Base
-from sqlalchemy import Column, String, Integer, Date, Text, DateTime, func, text
+from sqlalchemy import Column, String, Integer, Text, text
 from sqlalchemy.orm import relationship
+import sqlalchemy as sql
 
 
 # Таблица users
@@ -11,11 +12,10 @@ class Users(Base):
     name = Column(String(60), nullable=False)
     username = Column(String(30), nullable=False, unique=True)
     lastname = Column(String(60))
-    birthday = Column(Date)
+    birthday = Column(String(10))
     avatar_url = Column(Text)
-    date_created = Column(Date, server_default=func.current_date())
-    last_time_online = Column(DateTime, server_default=text("date_trunc('minute', CURRENT_TIMESTAMP)"))  #  Если postgresql
-    # last_time_online = Column(DateTime, server_default=text("datetime(strftime('%Y-%m-%d %H:%M:00', 'now'))"))  # Если не postgresql
+    date_created = Column(String(10), nullable=False, server_default=text("to_char(current_date, 'DD-MM-YYYY')"))
+    last_time_online = Column(String(16), nullable=False, server_default=sql.text("to_char(current_timestamp, 'DD-MM-YYYY HH24:MI')"))
     phone = Column(String(20), unique=True)
     email = Column(String(254), unique=True)
 

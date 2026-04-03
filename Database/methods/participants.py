@@ -21,8 +21,8 @@ class ParticipantsRequests(BasicMethods[Participants]):
         Удаление строки с chat_id = chat_id и user_id = user_id
         """
 
-        self._exists('chat_id', value=chat_id)  # Проверка на существование такого chat_id
-        self._exists('user_id', value=user_id)  # Проверка на существование такого user_id
+        self.exists('chat_id', value=chat_id)  # Проверка на существование такого chat_id
+        self.exists('user_id', value=user_id)  # Проверка на существование такого user_id
         participant = self.session.get(Participants, (chat_id, user_id))  # Получение участника группы
         self.session.delete(participant)  # Удаление участника
 
@@ -34,8 +34,8 @@ class ParticipantsRequests(BasicMethods[Participants]):
             атрибута attr_name на значение value
         """
 
-        self._exists('chat_id', value=chat_id)  # Проверка на существование такого chat_id
-        self._exists('user_id', value=user_id)  # Проверка на существование такого user_id
+        self.exists('chat_id', value=chat_id)  # Проверка на существование такого chat_id
+        self.exists('user_id', value=user_id)  # Проверка на существование такого user_id
         self._get_column(attr_name)  # Проверка существования такой колонки
 
         instance = self.session.get(self.model, [chat_id, user_id])

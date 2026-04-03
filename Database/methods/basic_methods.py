@@ -6,6 +6,8 @@ from typing import Generic, TypeVar, Sequence, Any
 from sqlalchemy import select, Column
 from sqlalchemy.orm import Session
 
+from Database.models.users import Users
+
 T = TypeVar("T")  # Нужно для правильной аннотации и подсказок
 
 class BasicMethods(Generic[T]):
@@ -13,8 +15,18 @@ class BasicMethods(Generic[T]):
         self.session = session
         self.model = model
 
+    @staticmethod
+    def __get_attributes(obj) -> dict:
+        attrs = {}
 
-    def _get_column(self, attr_name: str) -> Column | AttributeError:
+        # перебор через dir() и getattr, пропуская исключения и приватные, если нужно
+        for name in dir(obj):
+            if name.startswith('_'):
+                continue
+            attrs[name] = getattr(obj, name)
+        return attrs
+
+    def _get_column(self, attr_name: str) -> Column | bool:
         """
         Проверка существования колонки в таблице
 
@@ -22,11 +34,11 @@ class BasicMethods(Generic[T]):
         :return: колонка таблицы
         """
 
-        if not hasattr(self.model, attr_name):
-            raise AttributeError(f"Модель {self.model.__name__} не содержит поля '{attr_name}'")
+        if not hasattr(self.model, attr_name): return False
+            # raise AttributeError(f"Модель {self.model.__name__} не содержит поля '{attr_name}'")
         return getattr(self.model, attr_name)
 
-    def _exists(self, attr_name: str, value: Any) -> None | ValueError:
+    def exists(self, attr_name: str, value: Any) -> bool:
         """
         Проверка существования у колонки attr_name значения value
 
@@ -36,8 +48,27 @@ class BasicMethods(Generic[T]):
         """
 
         column = self._get_column(attr_name)
+        if not column: return False
         is_not_exits = self.session.execute(select(self.model).where(column == value)).scalar() is None
-        if is_not_exits: raise ValueError(f"{attr_name} - несуществующие в таблице {self.model.__name__} колонка")
+        # if is_not_exits: raise ValueError(f"{attr_name} - несуществующие в таблице {self.model.__name__} колонка")
+        if is_not_exits: return False
+        return True
+
+    def get_dict(self, raw_users: Sequence[list]) -> list[dict]:
+        structured_users = list()
+        for user in raw_users:
+            user_dict = self.__get_attributes(user)
+            for key, value in user_dict.copy().items():  # Проверка элементов на экземпляр класса
+                # Если не объект класса "sqlalchemy" или список, то возращаем
+                type_attr = getattr(value, '__module__', '')
+                if type_attr.startswith('sqlalchemy.') or type_attr.startswith('Database.'):
+                    # Если нужны связанные строки из других таблиц -
+                    # and not isinstance(value, InstrumentedList)
+                    del user_dict[key]  # Удаление неподходящих атрибутов
+
+            structured_users.append(user_dict)
+
+        return structured_users
 
     def add(self, **kwargs) -> None:
         """
@@ -50,21 +81,24 @@ class BasicMethods(Generic[T]):
         self.session.add(self.model(**kwargs))
         print(f'Запись в таблице {self.model.__name__} добавлена с параметрами {kwargs}')
 
-    def select_all(self) -> Sequence[T]:
+    def select_all(self) -> list[dict]:
         """
         Вывод все значения всех пользователей
         :return: список классов таблицы
         """
 
-        return self.session.scalars(select(self.model)).all()
+        raw_users = self.session.scalars(select(self.model)).all()
+        structured_users = self.get_dict(raw_users)
+
+        return structured_users
 
     def update(self, id: int, attr_name: str, value: Any) -> None:
         """
         Обновление у пользователя с id = id атрибута attr_name на значение value
         """
 
-        self._exists('id', value=id)  # Проверка существования такого id
-        self._get_column(attr_name)  # Проверка существования такой колонки
+        if not self.exists('id', value=id): return # Проверка существования такого id
+        if not self._get_column(attr_name): return  # Проверка существования такой колонки
 
         instance = self.session.get(self.model, id)
         setattr(instance, attr_name, value)
@@ -76,6 +110,6 @@ class BasicMethods(Generic[T]):
         Удаление записи с id = id
         """
 
-        self._exists('id', value=id)  # Проверка на существование такого id
+        self.exists('id', value=id)  # Проверка на существование такого id
         self.session.delete(self.session.get(self.model, id))
         print(f'Запись в таблице {self.model.__name__} с id {id} удалёна')

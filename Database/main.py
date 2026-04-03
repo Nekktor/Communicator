@@ -7,7 +7,7 @@ from Database.methods.messages import MessagesRequests
 from Database.methods.participants import ParticipantsRequests
 
 # Создание всех ещё не созданных таблиц (см. Database.methods.init)
-Base.metadata.create_all(engine)  # Модели с родительским классом Base записываются в Base.metadata
+# Base.metadata.create_all(engine)  # Модели с родительским классом Base записываются в Base.metadata
 
 # Главный класс - через него осуществляется работа с методами
 class DataBase:

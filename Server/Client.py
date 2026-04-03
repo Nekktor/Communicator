@@ -1,0 +1,86 @@
+import websockets
+import asyncio
+import datetime
+import uuid
+import json
+url = "ws://localhost:8765"
+
+class TaskManager():
+    def __init__(self):
+        self.tasks_in_progress = set()
+        self.queue_tasks = asyncio.Queue()
+        self.running = True
+        self.id_response = {}
+
+    async def add_task(self, function, id_task, *args):
+        #print("add_task")
+        self.task_info = {"function": function, "id_task": id_task, "params": args}
+        self.current_task = True
+        await self.queue_tasks.put(self.task_info)
+
+    async def start_tasks(self, websocket):
+        #print("TaskManager запущен")
+        await asyncio.gather(self.process_task(),
+                             self.get_response(websocket))
+
+
+
+    async def process_task(self):
+        while self.running:
+            print(1)
+            #print("1")
+            #print(self.queue_tasks)
+            task_info = await self.queue_tasks.get()
+            #print("2")
+            function = task_info["function"]
+            id_task = task_info["id_task"]
+            params = task_info["params"]
+            task = asyncio.create_task(function(id_task, *params))
+            #print("3")
+            self.tasks_in_progress.add(task)
+            task.add_done_callback(lambda x: self.remove_task(x))
+            #print("Здача запущена")
+
+    async def get_response(self, websocket):
+        async for response in websocket:
+            t_response = json.loads(response)
+            print(t_response)
+            self.id_response[t_response["id_task"]] = t_response["response"]
+
+    def remove_task(self, task):
+        if task in self.tasks_in_progress:
+            self.tasks_in_progress.remove(task)
+
+
+
+class Client:
+    def __init__(self):
+        self.temp_id = str(uuid.uuid4())#временный id
+        self.user_id = "" # @nickname
+        self.task_manager = TaskManager()
+
+
+    async def connect(self):
+        async with websockets.connect(url) as websocket:
+            print("Подключено")
+            try:
+                manager_task = asyncio.create_task(self.task_manager.start_tasks(websocket))
+                await asyncio.sleep(0.1)
+                #await self.task_manager.start_tasks(websocket)
+                await self.task_manager.add_task(self.auth, str(uuid.uuid4()), websocket, self.temp_id)
+                #print(self.task_manager.current_task)
+                print(self.task_manager.id_response)
+                await  manager_task
+            except Exception as e:
+                print(f"Error: {e}")
+    async def auth(self, id_task, websocket, temp_id):
+        #print("Отправка")
+        await websocket.send(json.dumps({"action" : "auth", "id_task": id_task, "params": [temp_id]}))
+        while id_task not in self.task_manager.id_response:
+            await asyncio.sleep(0.1)
+        print(self.task_manager.id_response[id_task])
+
+
+if __name__ == "__main__":
+    client = Client()
+    asyncio.run(client.connect())
