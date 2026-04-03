@@ -39,6 +39,22 @@ class BasicMethods(Generic[T]):
         is_not_exits = self.session.execute(select(self.model).where(column == value)).scalar() is None
         if is_not_exits: raise ValueError(f"{attr_name} - несуществующие в таблице {self.model.__name__} колонка")
 
+    def exists(self, attr_name: str, value: Any) -> bool:
+        """
+        Проверка существования у колонки attr_name значения value
+
+        :param attr_name: название колонки
+        :param value: значение колонки
+        :return: булевое значение
+        """
+
+        column = self._get_column(attr_name)
+        if not column: return False
+        is_not_exits = self.session.execute(select(self.model).where(column == value)).scalar() is None
+        # if is_not_exits: raise ValueError(f"{attr_name} - несуществующие в таблице {self.model.__name__} колонка")
+        if is_not_exits: return False
+        return True
+
     def add(self, **kwargs) -> None:
         """
         Добавление пользователя в таблицу

@@ -7,7 +7,7 @@ url = "ws://localhost:8765"
 
 class TaskManager():
     def __init__(self):
-        self.tasks_in_progress = set()
+        self.tasks_in_progress = set() #
         self.queue_tasks = asyncio.Queue()
         self.running = True
         self.id_response = {}
@@ -66,19 +66,23 @@ class Client:
             try:
                 manager_task = asyncio.create_task(self.task_manager.start_tasks(websocket))
                 await asyncio.sleep(0.1)
+                user_input = ["Nikitka"]
                 #await self.task_manager.start_tasks(websocket)
-                await self.task_manager.add_task(self.auth, str(uuid.uuid4()), websocket, self.temp_id)
+                await self.task_manager.add_task(self.auth, str(uuid.uuid4()), websocket, *user_input)
                 #print(self.task_manager.current_task)
                 print(self.task_manager.id_response)
                 await  manager_task
             except Exception as e:
                 print(f"Error: {e}")
-    async def auth(self, id_task, websocket, temp_id):
+    async def auth(self, id_task, websocket, username):
         #print("Отправка")
-        await websocket.send(json.dumps({"action" : "auth", "id_task": id_task, "params": [temp_id]}))
+        await websocket.send(json.dumps({"action" : "auth", "id_task": id_task, "params": [username]}))
         while id_task not in self.task_manager.id_response:
             await asyncio.sleep(0.1)
-        print(self.task_manager.id_response[id_task])
+        if self.task_manager.id_response[id_task] == id_task:
+            self.user_id = self.task_manager.id_response[id_task]
+        else:
+            print("Не удалось создать пользователя")
 
 
 if __name__ == "__main__":

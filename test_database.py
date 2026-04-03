@@ -19,10 +19,10 @@ def health_check_users(db):
 
         print('-' * 150)
 
-    views()
+    #views()
 
-    # db.users.add(name='Никита', username='Nikita', lastname='Соколов',
-    #              birthday=date(2011, 1, 11), phone='89012345678', email='mail@yandex.ru')
+    db.users.add(name='Никита2', username='Nikitka', lastname='Соколов2',
+                birthday=date(2011, 1, 12), phone="Noneefrf", email="fdvdf")
     # db.users.add(name='Сева', username='Seva', lastname=None, birthday=None, phone='89876543210', email=None)
     # db.users.add(name='Юра', username='Yura', lastname='Мельник', birthday=None, phone=None, email=None)
     # db.users.add(name='Юра2', username='Yura2', lastname='Мельник',
@@ -128,9 +128,9 @@ with Session() as session:
             # РАБОЧАЯ ЧАСТЬ
 
             health_check_users(db)
-            health_check_chats(db)
-            health_check_participants(db)
-            health_check_messages(db)
+            #health_check_chats(db)
+            #health_check_participants(db)
+            #health_check_messages(db)
 
     # except Exception as e:
     #     print(f"Ошибка: {e}")
