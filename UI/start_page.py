@@ -1,28 +1,25 @@
-import tkinter as tk
+import customtkinter as ctk
 
-class StartPage:
+class StartPage(ctk.CTkFrame):
     def __init__(self, master):
-        """
-        Создание, отображение и скрытие начальной страницы, появляющейся перед входом в приложение
-
-        :param master: Главное окно приложения, находится в main
-        """
-
-        # Рамка в которой размещаются элементы данного окна
-        self.frame = tk.Frame(master, height=600, width=800)
+        # Инициализируем сам класс как CTkFrame
+        super().__init__(master, corner_radius=0)
 
         # Элементы стартовой страницы
-        self.welcome_label = tk.Label(self.frame, text="Welcome to Communicator!", font=("Arial", 25))
+        # Теперь master для label — это self (сам фрейм страницы)
+        self.welcome_label = ctk.CTkLabel(
+            self,
+            text="Welcome to Communicator!",
+            font=("Arial", 32, "bold")
+        )
 
-        # Размещение элементов на экране
-        self.welcome_label.pack(pady=100)
+        # Центрируем надпись
+        self.welcome_label.pack(expand=True)
 
     def show_start_page(self):
-        self.frame.pack(fill="both", expand=True)
+        # Показываем саму страницу
+        self.pack(fill="both", expand=True)
 
     def hide_start_page(self):
-        self.frame.pack_forget()
-
-
-
-
+        # Скрываем саму страницу
+        self.pack_forget()

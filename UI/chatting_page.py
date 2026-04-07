@@ -1,47 +1,58 @@
-import tkinter as tk
+import customtkinter as ctk
 
-class ChattingPage:
-    _instance = None
 
-    def __new__(cls, master, switch_to_adding_page):
-        """
-        UI основного приложение, включает окна со списком чатов и с выбранным чатом
+class ChattingPage(ctk.CTkFrame):
+    def __init__(self, master, switch_to_adding_page, **kwargs):
+        # Инициализируем базовый класс CTkFrame
+        super().__init__(master, corner_radius=0, **kwargs)
 
-        :param master: Главное окно приложения, находится в main
-        :param switch_to_adding_page: Метод, перемещающий пользователя на страницу для добавления нового чата
-        """
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
+        self.switch_to_adding_chat = switch_to_adding_page
 
-            cls._instance.master = master
-            cls._instance.switch_to_adding_chat = switch_to_adding_page
+######### --- Левая панель: список чатов --- #########
 
-            # Поле с UI списка чатов
-            cls._instance.chats_list_frame = tk.Frame(cls._instance.master, height=600, width=300, bd=5, relief="solid")
-            cls._instance.chats_list_frame.pack_propagate(False)
+        self.chats_list_frame = ctk.CTkFrame(
+            self,
+            width=300,
+            corner_radius=0,
+            border_width=1,
+            border_color="gray"
+        )
+        self.chats_list_frame.pack_propagate(False)
 
-            cls._instance.chats_list_label = tk.Label(cls._instance.chats_list_frame, text="Чаты", bd=1, relief="solid")
+        # Область для списка чатов
+        self.chats_list_scrollable_frame = ctk.CTkScrollableFrame(
+            self.chats_list_frame,
+            border_width=1
+        )
 
-            cls._instance.add_new_chat_button = tk.Button(cls._instance.chats_list_frame, text='Добавить новый чат', width=20, height=5,
-                                                 relief="solid", command=cls._instance.switch_to_adding_chat)
+        self.add_new_chat_button = ctk.CTkButton(
+            self.chats_list_frame,
+            height=38,
+            text='Добавить новый чат',
+            command=self.switch_to_adding_chat
+        )
 
-            # Поле с UI выбранного чата
-            cls._instance.chat_frame = tk.Frame(cls._instance.master, height=600, width=500, bd=5, relief="solid")
-            cls._instance.chat_frame.pack_propagate(False)
+######### --- Правая панель: окно чата --- #########
 
-            cls._instance.chat_label = tk.Label(cls._instance.chat_frame, text="Чат")
+        self.chat_frame = ctk.CTkFrame(
+            self,
+            corner_radius=0,
+            border_width=1,
+            border_color="gray"
+        )
+        # Убираем pack_propagate(False), чтобы фрейм подстраивался под контент,
+        # либо оставляем его, если планируем жестко фиксировать размеры.
 
-            # Размещение элементов на экране
-            cls._instance.chat_label.pack(side="top")
-            cls._instance.chats_list_label.pack(side="top", fill="x")
-            cls._instance.add_new_chat_button.pack(side="top", pady=5)
+        self.setup_initial_view()
 
-        return cls._instance
+    def setup_initial_view(self):
+        self.chats_list_frame.pack(side="left", fill="y")
+        self.chats_list_scrollable_frame.pack(side="top", pady=10, padx=5, fill="both", expand=True)
+        self.add_new_chat_button.pack(side="bottom", pady=5, padx=5, fill="x")
+        self.chat_frame.pack(side="right", fill="both", expand=True)
 
     def show_chatting_page(self):
-        self.chats_list_frame.pack(side="left")
-        self.chat_frame.pack(side="right")
+        self.pack(fill="both", expand=True)
 
     def hide_chatting_page(self):
-        self.chats_list_frame.pack_forget()
-        self.chat_frame.pack_forget()
+        self.pack_forget()
