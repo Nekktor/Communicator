@@ -20,13 +20,13 @@ class App:
 
         # Инициализация классов страниц
         self.start_page = StartPage(self.root)
-        self.chatting_page = ChattingPage(self.root, self.switch_to_adding_page)
+        self.chatting_page = ChattingPage(self.root, self.switch_to_adding_page, self.send_message)
         self.adding_page = AddingPage(self.root, self.switch_to_chatting_page, self.on_chat_adding_submit)
         self.sign_up_page = SignUpPage(self.root, self.register_user, self.login_user)
 
         self.current_page = 'start_page'
 
-        self.add_chat_view(None, "WOW")
+        self.add_chat_view(None, "Разработка немыслимого", 'Смотрите что сделал!')
 
     def remove_pages(self) -> None:
         self.start_page.hide_start_page()
@@ -57,13 +57,17 @@ class App:
         participants = self.adding_page.participants_entry.get().split(',')
         print(f"Создание чата: {chat_name}")
 
-    def add_chat_view(self, avatar_url, name: str) -> None:
-        chat_avatar = SelectableChatView(self.chatting_page.chats_list_scrollable_frame, avatar_url, name)
+    def send_message(self) -> None:
+        message_text = self.chatting_page.message_entry.get()
+        self.add_message_view('text', message_text)
+
+    def add_chat_view(self, avatar_url, name: str, last_message: str) -> None:
+        chat_avatar = SelectableChatView(self.chatting_page.chats_list_scrollable_frame, avatar_url, name, last_message)
         chat_avatar.pack(side='top', anchor='ne', pady=5, padx=5, fill="x")
 
     def add_message_view(self, content_type: str, content: str) -> None:
         message = MessageView(self.chatting_page.chat_frame, content_type, content)
-        message.pack(side='bottom', anchor='se', pady=5, padx=5, fill="x")
+        message.pack(side='top', anchor='ne', pady=5, padx=5)
 
     def register_user(self) -> None:
         user_name = self.sign_up_page.name_entry.get()

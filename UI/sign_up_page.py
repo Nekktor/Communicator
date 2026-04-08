@@ -16,11 +16,29 @@ class SignUpPage(ctk.CTkFrame):
         )
 
         # Поля ввода и подписи (master теперь self)
-        self.name_entry_label = ctk.CTkLabel(self, text='Введите своё имя')
-        self.name_entry = ctk.CTkEntry(self, width=300, height=40)
+        self.name_entry_label = ctk.CTkLabel(
+            self,
+            text='Отображаемое имя'
+        )
 
-        self.username_entry_label = ctk.CTkLabel(self, text='Введите имя пользователя')
-        self.username_entry = ctk.CTkEntry(self, width=300, height=40)
+        self.name_entry = ctk.CTkEntry(
+            self,
+            width=300,
+            height=40,
+            placeholder_text='Например: Всевладеющий'
+        )
+
+        self.username_entry_label = ctk.CTkLabel(
+            self,
+            text='Уникальное имя пользователя'
+        )
+
+        self.username_entry = ctk.CTkEntry(
+            self,
+            width=300,
+            height=40,
+            placeholder_text='Например: @Nekktor'
+        )
 
         # Кнопки
         self.submit_button = ctk.CTkButton(
