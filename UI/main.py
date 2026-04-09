@@ -59,15 +59,21 @@ class App:
 
     def send_message(self) -> None:
         message_text = self.chatting_page.message_entry.get()
-        self.add_message_view('text', message_text)
+        if message_text != '':
+            self.add_message_view('text', message_text, 'User')
+            self.chatting_page.message_entry.delete(0, 'end')
 
     def add_chat_view(self, avatar_url, name: str, last_message: str) -> None:
         chat_avatar = SelectableChatView(self.chatting_page.chats_list_scrollable_frame, avatar_url, name, last_message)
         chat_avatar.pack(side='top', anchor='ne', pady=5, padx=5, fill="x")
 
-    def add_message_view(self, content_type: str, content: str) -> None:
-        message = MessageView(self.chatting_page.chat_frame, content_type, content)
-        message.pack(side='top', anchor='ne', pady=5, padx=5)
+    def add_message_view(self, content_type: str, content: str, sender_name: str) -> None:
+        if sender_name == 'User':
+            message = MessageView(self.chatting_page.messages_frame, content_type, content, sender_name)
+            message.pack(side='bottom', anchor='se', pady=5, padx=5, expand=True)
+        else:
+            # Ищем имя по id отправителя и передаём его
+            pass
 
     def register_user(self) -> None:
         user_name = self.sign_up_page.name_entry.get()

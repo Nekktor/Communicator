@@ -24,11 +24,12 @@ class ChattingPage(ctk.CTkFrame):
             border_width=1,
             border_color="gray"
         )
-        self.chats_list_frame.pack_propagate(False)
+        self.chats_list_frame.grid_propagate(False)
 
         # Область для самого списка чатов
         self.chats_list_scrollable_frame = ctk.CTkScrollableFrame(
             self.chats_list_frame,
+            height=540,
             border_width=1
         )
 
@@ -45,9 +46,16 @@ class ChattingPage(ctk.CTkFrame):
         # Рамка для выбранного чата
         self.chat_frame = ctk.CTkFrame(
             self,
+            width=500,
             corner_radius=0,
             border_width=1,
             border_color="gray"
+        )
+        self.chat_frame.grid_propagate(False)
+
+        self.messages_frame = ctk.CTkScrollableFrame(
+            self.chat_frame,
+            border_width=1
         )
 
         # Поле для ввода сообщения на отправку
@@ -57,7 +65,7 @@ class ChattingPage(ctk.CTkFrame):
             width=440,
             placeholder_text='Введите своё сообщение'
         )
-        self.message_entry.pack_propagate(False)
+        self.message_entry.grid_propagate(False)
 
         self.send_button = ctk.CTkButton(
             self.chat_frame,
@@ -67,22 +75,38 @@ class ChattingPage(ctk.CTkFrame):
             corner_radius=20,
             command=self.send_message
         )
-        self.send_button.pack_propagate(False)
+        self.send_button.grid_propagate(False)
 
         self.setup_initial_view()
 
     def setup_initial_view(self):
-        # Упаковка рамки со списком чатов
-        self.chats_list_frame.pack(side="left", fill="y")
+        self.grid_columnconfigure((0, 1), weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
-        self.chats_list_scrollable_frame.pack(side="top", pady=10, padx=5, fill="both", expand=True)
-        self.add_new_chat_button.pack(side="bottom", pady=5, padx=5, fill="x")
+        # Упаковка рамки со списком чатов
+        self.chats_list_frame.grid(column=0, row=0, sticky="nsew")
+
+        self.chats_list_frame.grid_columnconfigure(0, weight=1)
+        self.chats_list_frame.grid_rowconfigure(0, weight=1)
+        self.chats_list_frame.grid_rowconfigure(1, weight=0)
+
+        self.chats_list_scrollable_frame.grid(column=0, row=0, sticky="nsew", pady=5, padx=5)
+        self.add_new_chat_button.grid(column=0, row=1, sticky="sew", padx=5, pady=5)
 
         # Упаковка выбранного чата
-        self.chat_frame.pack(side="right", fill="both", expand=True)
+        self.chat_frame.grid(column=1, row=0, sticky="nsew")
 
-        self.message_entry.pack(side="left", anchor="sw", pady=5, padx=5)
-        self.send_button.pack(side="right", anchor="se", pady=5, padx=5)
+        self.chat_frame.grid_columnconfigure((0, 1), weight=1)
+        self.chat_frame.grid_rowconfigure(0, weight=1)
+        self.chat_frame.grid_rowconfigure(1, weight=0)
+
+        self.messages_frame.grid(column=0, row=0, sticky="nsew", columnspan=2, padx=5, pady=5)
+        self.message_entry.grid(column=0, row=1, sticky="sw", pady=5, padx=5)
+        self.send_button.grid(column=1, row=1, sticky="se", pady=5, padx=5)
+
+        # self.message_entry.pack(side="left", anchor="sw", pady=5, padx=5)
+        # self.send_button.pack(side="right", anchor="se", pady=5, padx=5)
+        # self.messages_frame.pack(side="top", fill="x", anchor="nw", pady=5, padx=5)
 
     def show_chatting_page(self):
         self.pack(fill="both", expand=True)
