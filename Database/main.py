@@ -16,3 +16,12 @@ class DataBase:
         self.chats = ChatsRequests(session)
         self.messages = MessagesRequests(session)
         self.participants = ParticipantsRequests(session)
+
+'''# Добавить колонку в таблицу users
+from sqlalchemy import text
+with engine.connect() as conn:
+    conn.execute(text("ALTER TABLE users ADD COLUMN password VARCHAR(52);"))
+
+    # Присваивание NOT NULL
+    conn.execute(text("ALTER TABLE users ALTER COLUMN password SET NOT NULL;"))
+    conn.commit()'''
