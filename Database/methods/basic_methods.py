@@ -91,7 +91,7 @@ class BasicMethods(Generic[T]):
     @catching_errors()
     def select_all(self) -> dict:
         """
-        Вывод все значения всех пользователей
+        Вывод всех значений всех пользователей
         :return: список классов таблицы
         """
 
