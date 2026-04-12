@@ -63,7 +63,11 @@ class SignUpPage(ctk.CTkFrame):
         )
 
         # Надпись для ошибок
-        self.error_label = ctk.CTkLabel(self, text='', text_color="red")
+        self.error_label = ctk.CTkLabel(
+            self,
+            text='',
+            text_color="red"
+        )
 
         # Начальное размещение элементов
         self.setup_initial_view()
