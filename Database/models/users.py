@@ -9,13 +9,14 @@ class Users(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(60), nullable=False)
+    name = Column(String(52), nullable=False)
     username = Column(String(30), nullable=False, unique=True)
     lastname = Column(String(60))
     birthday = Column(String(10))
     avatar_url = Column(Text)
     date_created = Column(String(10), nullable=False, server_default=text("to_char(current_date, 'DD-MM-YYYY')"))
     last_time_online = Column(String(16), nullable=False, server_default=sql.text("to_char(current_timestamp, 'DD-MM-YYYY HH24:MI')"))
+    password = Column(String(52), nullable=False)
     phone = Column(String(20), unique=True)
     email = Column(String(254), unique=True)
 
