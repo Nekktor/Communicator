@@ -5,6 +5,7 @@ import uuid
 import json
 url = "ws://localhost:8765"
 
+
 class TaskManager():
     def __init__(self):
         self.tasks_in_progress = set() #
@@ -51,8 +52,8 @@ class TaskManager():
         if task in self.tasks_in_progress:
             self.tasks_in_progress.remove(task)
 
-
-
+# Создание задачи:
+# await self.task_manager.add_task(self.methodename, str(uuid.uuid4()), websocket, *input_data)
 class Client:
     def __init__(self):
         self.temp_id = str(uuid.uuid4())#временный id
