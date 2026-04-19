@@ -59,14 +59,13 @@ class Client:
         self.user_id = "" # @nickname
         self.task_manager = TaskManager()
 
-
     async def connect(self):
         async with websockets.connect(url) as websocket:
             print("Подключено")
             try:
                 manager_task = asyncio.create_task(self.task_manager.start_tasks(websocket))
                 await asyncio.sleep(0.1)
-                user_input = ["Nikitka"]
+                user_input = ["Nikita"]
                 #await self.task_manager.start_tasks(websocket)
                 await self.task_manager.add_task(self.auth, str(uuid.uuid4()), websocket, *user_input)
                 #print(self.task_manager.current_task)
@@ -74,13 +73,34 @@ class Client:
                 await  manager_task
             except Exception as e:
                 print(f"Error: {e}")
+
+    async def get_chats(self, id_task, websocket):
+        await websocket.send(json.dumps({"action" : "get_chats", "id_task" : id_task, "params": []}))
+        while id_task not in self.task_manager.id_response:
+            await asyncio.sleep(0.1)
+        if self.task_manager.id_response[id_task] != "Fall":
+            return self.task_manager.id_response[id_task]#возращает чаты
+        else:
+            print("Не получилось получить чаты")
+
+    async def create_message(self, id_task, websocket, username, content):
+        await websocket.send(json.dumps({"action" : "create_message", "id_task": id_task, "params" : [username, content]}))
+        while id_task not in self.task_manager.id_response:
+            await asyncio.sleep(0.1)
+
+        if self.task_manager.id_response[id_task] != "Fall":
+            print("Сообщение отправлено") #пометка в ui что сообщение отправлено
+        else:
+            print("Не получилось отправить сообщение")
+
     async def auth(self, id_task, websocket, username):
         #print("Отправка")
         await websocket.send(json.dumps({"action" : "auth", "id_task": id_task, "params": [username]}))
         while id_task not in self.task_manager.id_response:
             await asyncio.sleep(0.1)
-        if self.task_manager.id_response[id_task] == id_task:
+        if self.task_manager.id_response[id_task] == username:
             self.user_id = self.task_manager.id_response[id_task]
+            print("ID (nickname) клиента:", self.user_id)
         else:
             print("Не удалось создать пользователя")
 
