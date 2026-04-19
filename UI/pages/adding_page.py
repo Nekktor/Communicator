@@ -9,6 +9,9 @@ class AddingPage(ctk.CTkFrame):
         self.returning = back_to_chats
         self.submitting = on_chat_adding_submit
 
+        self.grid_columnconfigure((0, 3), weight=1)
+        self.grid_rowconfigure((0, 11), weight=1)
+
         # Заголовок страницы
         self.title_label = ctk.CTkLabel(
             self,
@@ -87,30 +90,41 @@ class AddingPage(ctk.CTkFrame):
             command=self.submitting
         )
 
+        self.error_label = ctk.CTkLabel(
+            self,
+            text='',
+            text_color="red"
+        )
+
         self.setup_initial_view()
 
     def setup_initial_view(self):
-        # Размещение элементов
-        self.title_label.pack(pady=10)
+        # Все элементы размещаем в column=1 (центр)
+        self.title_label.grid(row=0, column=1, columnspan=2, pady=(40, 20))
 
-        self.chat_type_label.pack(pady=(10, 0))
-        self.chat_type_choose_menu.pack(pady=10)
+        self.chat_type_label.grid(row=1, column=1, columnspan=2, pady=(10, 0))
+        self.chat_type_choose_menu.grid(row=2, columnspan=2, column=1, pady=10)
 
-        self.chat_name_label.pack(pady=(10, 0))
-        self.chat_name_entry.pack(pady=10)
+        self.chat_name_label.grid(row=3, column=1, columnspan=2, pady=(10, 0))
+        self.chat_name_entry.grid(row=4, column=1, columnspan=2, pady=10)
 
-        self.participants_label.pack(pady=(10, 0))
-        self.participants_entry.pack(pady=10)
+        self.participants_label.grid(row=5, column=1, columnspan=2, pady=(10, 0))
+        self.participants_entry.grid(row=6, column=1, columnspan=2, pady=10)
 
-        self.avatar_url_label.pack(pady=(10, 0))
-        self.avatar_url_entry.pack(pady=(10, 0))
+        self.avatar_url_label.grid(row=7, column=1, columnspan=2, pady=(10, 0))
+        self.avatar_url_entry.grid(row=8, column=1, columnspan=2, pady=10)
 
-        # Кнопки прижимаем к нижней части окна
-        self.back_button.place(relx=0.25, rely=0.9, anchor="center")
-        self.submit_button.place(relx=0.75, rely=0.9, anchor="center")
+        self.error_label.grid(row=9, column=1, columnspan=2, pady=10)
+
+        self.back_button.grid(row=10, column=1, padx=(0, 10), pady=10, sticky="nsew")
+        self.submit_button.grid(row=10, column=2, padx=(10, 0), pady=10, sticky="nsew")
+
+    def error_callback(self, error):
+        self.error_label.configure(text=error)
 
     def show_adding_page(self):
         self.pack(expand=True, fill="both")
+        self.error_label.configure(text='')
 
     def hide_adding_page(self):
         self.pack_forget()

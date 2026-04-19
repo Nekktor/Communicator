@@ -1,11 +1,18 @@
 import customtkinter as ctk
+import sys, os
 
-from start_page import StartPage
-from chatting_page import ChattingPage
-from adding_page import AddingPage
-from sign_up_page import SignUpPage
-from chat_view import MessageView, ChatView
-from selectable_chat_view import SelectableChatView
+sys.path.append(os.path.abspath("../Database"))
+
+from UI.pages.start_page import StartPage
+from UI.pages.chatting_page import ChattingPage
+from UI.pages.adding_page import AddingPage
+from UI.pages.sign_up_page import SignUpPage
+from UI.element_views.chat_view import MessageView, ChatView
+from UI.element_views.selectable_chat_view import SelectableChatView
+from Database.main_db import Session, DataBase
+
+with Session() as session:
+    db = DataBase(session)
 
 # Настройка внешнего вида (можно вынести в initialize)
 ctk.set_appearance_mode("dark")  # "light", "dark", "system"
@@ -24,7 +31,8 @@ class App:
         self.adding_page = AddingPage(self.root, self.switch_to_chatting_page, self.on_chat_adding_submit)
         self.sign_up_page = SignUpPage(self.root, self.register_user, self.login_user)
 
-        self.available_chats = []
+        self.user = None
+        self.available_chats = {}
         self.current_page = 'start_page'
         self.current_chat = None
 
@@ -35,6 +43,35 @@ class App:
         self.sign_up_page.hide_sign_up_page()
 
     def switch_to_chatting_page(self) -> None:
+        # Получаем чаты по id пользователя
+        chats = db.chats.select_all_chats_by_id_user(user_id=self.user['id'])
+        if chats['isSuccess']:
+            for chat in chats['data']:
+                chat_id = chat['id']
+                chat_name = chat['name']
+                last_message = ''
+
+                participants_list = []
+                participants_response = db.participants.select_all()
+                if participants_response['isSuccess']:
+                    for participant in participants_response['data']:
+                        if participant['chat_id'] == chat_id:
+                            participants_list.append(participant)
+
+                # Получаем сообщения по id чата
+                messages = db.messages.select_all_messages_by_chat_id(chat_id=chat_id)
+                if messages['isSuccess']:
+                    messages_list = messages['data']
+                    if len(messages_list) > 0:
+                        last_message = messages_list[-1]['text']
+
+                    # Создаём словарь с доступными чатами и необходимой информацией
+                    self.available_chats[chat_id] = {'name': chat_name, 'last_message': last_message, 'messages': messages_list, 'participants_count': len(participants_list),'participants': participants_list}
+                else:
+                    print('Если вы видите это, значит знайте: это ошибка')
+        for chat_id in self.available_chats:
+            chat = self.available_chats[chat_id]
+            self.add_selectable_chat_view(chat_id,None, chat['name'], chat['last_message'])
         self.remove_pages()
         self.chatting_page.show_chatting_page()
         self.current_page = 'chatting_page'
@@ -64,67 +101,118 @@ class App:
         participants_count = len(participants)
         last_message = ''
         avatar_url = self.adding_page.avatar_url_entry.get()
-
-        self.add_selectable_chat_view(avatar_url, chat_name, last_message)
-        self.switch_to_chatting_page()
+        if chat_name != '' and participants[0] != '':
+            self.add_selectable_chat_view(avatar_url, chat_name, last_message)
+            self.switch_to_chatting_page()
+        else:
+            self.adding_page.error_callback('Проверьте заполненность полей!')
 
     # Метод для отправки сообщения
     def send_message(self) -> None:
         message_text = self.current_chat.message_entry.get()
         if message_text != '':
-            self.add_message_view('text', message_text, 'User')
-            self.current_chat.message_entry.delete(0, 'end')
+            self.add_message_view("text", message_text, 'Вы')
+            self.current_chat.message_entry.delete(0, "end")
 
     # Метод для открытия чата
-    def open_chat(self, chat_id=None) -> None:
+    def open_chat(self, chat_id) -> None:
         """
         Получаем информацию о чате из БД и передаём её
 
         :param chat_id: ID открываемого чата
         """
-        self.add_chat_view("group", "Разработка немыслимого", 3)
+        chat_name = self.available_chats[chat_id]['name']
+        chat_messages = self.available_chats[chat_id]['messages']
+        chat_participants_count = self.available_chats[chat_id]['participants_count']
+
+        self.add_chat_view('group', chat_name, chat_participants_count)
+
+        for message in chat_messages:
+            if message['file_id'] is not None:
+                content_type = 'image'
+                content = 'Пока без картинок'
+            else:
+                content_type = 'text'
+                content = message['text']
+            sender_response = db.users.select_by_id(id=message['user_id'])
+            if sender_response['isSuccess']:
+                sender_name = sender_response['data']['name']
+                if sender_name == self.user['name']:
+                    sender_name = 'Вы'
+            self.add_message_view(content_type, content, sender_name)
 
 #################################################################################################
     # Методы добавление UI
 #################################################################################################
 
-    # Добавление вида выбранного чата
-    def add_chat_view(self, chat_type, name, participants_count):
-        self.current_chat = ChatView(self.chatting_page, chat_type, name, participants_count, './no_image.jpg', self.send_message)
+    # Добавление вида выбранного чата (тип чата, имя чата, количество участников)
+    def add_chat_view(self, chat_type: str, name: str, participants_count: int):
+        self.current_chat = ChatView(self.chatting_page, chat_type, name, participants_count, None, self.send_message)
         self.chatting_page.on_chat_selection()
         self.current_chat.grid(column=1, row=0, sticky="nsew")
 
     # Добавление вида чата на панели списка чатов
-    def add_selectable_chat_view(self, avatar_url: str, name: str, last_message: str) -> None:
+    def add_selectable_chat_view(self, chat_id: int, avatar_url: str, name: str, last_message: str) -> None:
         selectable_chat = SelectableChatView(self.chatting_page.chats_list_scrollable_frame, avatar_url, name, last_message)
-        selectable_chat.bind("<Button-1>", command=self.open_chat)
-        self.available_chats.append(name)
+        selectable_chat.bind("<Button-1>", command=lambda event: self.open_chat(chat_id))
         selectable_chat.pack(side='top', anchor='ne', pady=5, padx=5, fill="x")
 
     # Добавление вида сообщения
     def add_message_view(self, content_type: str, content: str, sender_name: str) -> None:
-        if sender_name == 'User':
-            message = MessageView(self.current_chat.messages_frame, content_type, content, sender_name)
-            message.pack(side='bottom', anchor='se', pady=5, padx=5, expand=True)
-        else:
-            # Ищем имя по id отправителя и передаём его
-            pass
+        message = MessageView(self.current_chat.messages_frame, content_type, content, sender_name)
+        message.pack(side='top', anchor='se', pady=5, padx=5, expand=True)
 
-    #################################################################################################
+#################################################################################################
     # Функции для авторизации
-    #################################################################################################
+#################################################################################################
 
     def register_user(self) -> None:
-        user_name = self.sign_up_page.name_entry.get()
-        user_username = self.sign_up_page.username_entry.get()
-        self.switch_to_chatting_page()
+        name = self.sign_up_page.name_entry.get()
+        username = self.sign_up_page.username_entry.get()
+        password = self.sign_up_page.password_entry.get()
+        password_confirm = self.sign_up_page.password_confirm_entry.get()
+        if name != '' and username != '' and password != '' and password_confirm != '':
+            if password == password_confirm:
+                if not db.users.exists(username=username):
+                    register_response = db.users.add(name=name, username=username, password=password)
+                    if register_response['isSuccess']:
+                        self.user = register_response['data']
+                        self.switch_to_chatting_page()
+
+                        # Отладка
+                        users = db.users.select_all()
+                        if users['isSuccess']:
+                            print('Список всех пользователей:')
+                            for user in users['data']:
+                                print(user['name'], user['username'])
+                    else:
+                        self.sign_up_page.error_callback('Ошибочка вышла!')
+                        print(register_response)
+                else:
+                    self.sign_up_page.error_callback('Такое имя пользователя занято!')
+            else:
+                self.sign_up_page.error_callback('Пароли не совпадают!')
+        else:
+            self.sign_up_page.error_callback('Проверьте заполненность полей!')
 
     def login_user(self) -> None:
-        user_username = self.sign_up_page.username_entry.get()
-        self.switch_to_chatting_page()
+        username = self.sign_up_page.username_entry.get()
+        password = self.sign_up_page.password_entry.get()
+        if username != '' and password != '':
+            is_existing = db.users.exists(username=username, password=password)
+            if is_existing:
+                # Получение словаря в user_response['data'], где есть id и name
+                login_response = db.users.select_by_username(username=username)
+                if login_response['isSuccess']:
+                    self.user = login_response['data']
 
-    def sign_up_error_callback(self, error: str):
-        self.sign_up_page.error_callback(error)
+                    self.switch_to_chatting_page()
+            else:
+                self.sign_up_page.error_callback('Неправильный username или пароль')
+        else:
+            self.sign_up_page.error_callback('Проверьте заполненность полей!')
+
+#################################################################################################
 
     def initialize(self):
         self.start_page.show_start_page()

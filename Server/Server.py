@@ -2,7 +2,7 @@ import json
 
 import websockets
 import asyncio
-from Database.main import Session, DataBase
+from Database.main_db import Session, DataBase
 from Database.models.participants import UserRoleEnum
 from Database.models.messages import MessageTypeEnum
 from datetime import date

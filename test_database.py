@@ -2,7 +2,7 @@
 Файл основного кода
 """
 
-from Database.main import Session, DataBase
+from Database.main_db import Session, DataBase
 
 def health_check_users(db):
     def views():
@@ -236,7 +236,7 @@ def test_real_simulated(db):
                 if messages['isSuccess']:
                     for message in messages['data']:
                         # Получение имени пользователя по id
-                        name_response = db.users.select_name_by_id(message['user_id'])
+                        name_response = db.users.select_by_id(message['user_id'])
                         if name_response['isSuccess']:
                             print(f'[{name_response['data']['name']}]: {message['text']}')
                         else:

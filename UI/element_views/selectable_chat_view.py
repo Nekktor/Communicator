@@ -1,5 +1,16 @@
 import customtkinter as ctk
 from PIL import Image
+from pathlib import Path
+
+# Получаем путь к папке, где лежит текущий файл (.parent)
+# Если файл глубоко в подпапках, добавляйте .parent столько раз, сколько нужно
+# Или используйте .resolve() для получения абсолютного пути
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Теперь можно обращаться к любому файлу от корня проекта
+DEFAULT_AVATAR_PATH = BASE_DIR / "assets" / "default_avatar.jpg"
+
+print(DEFAULT_AVATAR_PATH)
 
 class SelectableChatView(ctk.CTkFrame):
     def __init__(self, master, avatar_url: str, name: str, last_message: str, **kwargs):
@@ -13,11 +24,11 @@ class SelectableChatView(ctk.CTkFrame):
         self.last_message = last_message
 
         # Отображение иконки чата
-        if self.avatar_url != '':
+        if self.avatar_url not in ['', None]:
             self.image = Image.open(self.avatar_url)
             self.avatar_image = ctk.CTkImage(dark_image=self.image, size=(50, 50))
         else:
-            self.image = Image.open('./assets/no_image.jpg')
+            self.image = Image.open(DEFAULT_AVATAR_PATH)
             self.avatar_image = ctk.CTkImage(dark_image=self.image, size=(50, 50))
 
         self.avatar = ctk.CTkLabel(self, image=self.avatar_image, text="")

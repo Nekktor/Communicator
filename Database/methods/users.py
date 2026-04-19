@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from datetime import date
 
-
 # Sql-запросы у таблице users
 class UsersRequests(BasicMethods[Users]):
     def __init__(self, session: Session):
@@ -34,6 +33,6 @@ class UsersRequests(BasicMethods[Users]):
         data = self.session.execute(select(Users.id, Users.name).where(Users.username == username)).mappings().one_or_none()
         return {'isSuccess': True, 'data': dict(data)}
 
-    def select_name_by_id(self, id: int) -> dict:
+    def select_by_id(self, id: int) -> dict:
         data = self.session.execute(select(Users.name).where(Users.id == id)).mappings().one_or_none()
         return {'isSuccess': True, 'data': dict(data)}
