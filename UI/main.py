@@ -27,65 +27,75 @@ class App:
 
         self.user = None
         self.available_chats = {}
-        self.current_page = 'start_page'
         self.current_chat = None
+        self.is_authorized = False
+        self.addable_users = []
 
         # Инициализация классов страниц
         self.start_page = StartPage(self.root)
-        self.adding_page = AddingPage(self.root, self.switch_to_chatting_page, self.on_chat_adding_submit)
         self.sign_up_page = SignUpPage(self.root, self.register_user, self.login_user)
-        self.chatting_page = None
 
-    def remove_pages(self) -> None:
-        self.start_page.hide_start_page()
-        self.adding_page.hide_adding_page()
-        self.sign_up_page.hide_sign_up_page()
-        if self.chatting_page is not None:
-            self.chatting_page.hide_chatting_page()
+        self.current_page = self.start_page
+
+        # Страницы для которых требуются данные из БД, инициализируются позже
+        self.chatting_page = None
+        self.adding_page = None
 
     def switch_to_chatting_page(self) -> None:
-        # Получаем чаты по id пользователя
-        chats = db.chats.select_all_chats_by_id_user(user_id=self.user['id'])
-        if chats['isSuccess']:
-            for chat in chats['data']:
-                chat_id = chat['id']
-                chat_name = chat['name']
-                last_message = ''
+        if not self.is_authorized:
+            # Получаем чаты по id пользователя
+            chats = db.chats.select_all_chats_by_id_user(user_id=self.user['id'])
+            if chats['isSuccess']:
+                for chat in chats['data']:
+                    chat_id = chat['id']
+                    chat_name = chat['name']
+                    last_message = ''
 
-                participants_list = []
-                participants_response = db.participants.select_all()
-                if participants_response['isSuccess']:
-                    for participant in participants_response['data']:
-                        if participant['chat_id'] == chat_id:
-                            participants_list.append(participant)
+                    participants_list = []
+                    participants_response = db.participants.select_all()
+                    if participants_response['isSuccess']:
+                        for participant in participants_response['data']:
+                            if participant['chat_id'] == chat_id:
+                                participants_list.append(participant)
+                                if participant['user_id'] != self.user['id'] and participant['user_id'] not in self.addable_users:
+                                    self.addable_users.append(participant['user_id'])
 
-                # Получаем сообщения по id чата
-                messages = db.messages.select_all_messages_by_chat_id(chat_id=chat_id)
-                if messages['isSuccess']:
-                    messages_list = messages['data']
-                    if len(messages_list) > 0:
-                        last_message = messages_list[-1]['text']
+                    # Получаем сообщения по id чата
+                    messages = db.messages.select_all_messages_by_chat_id(chat_id=chat_id)
+                    if messages['isSuccess']:
+                        messages_list = messages['data']
+                        if len(messages_list) > 0:
+                            last_message = messages_list[-1]['text']
 
-                    # Создаём словарь с доступными чатами и необходимой информацией
-                    self.available_chats[chat_id] = {'name': chat_name, 'last_message': last_message, 'messages': messages_list, 'participants_count': len(participants_list),'participants': participants_list}
-                else:
-                    print('Если вы видите это, значит знайте: это ошибка')
-        for chat_id in self.available_chats:
-            chat = self.available_chats[chat_id]
-            self.add_selectable_chat_view(chat_id,None, chat['name'], chat['last_message'])
-        self.remove_pages()
-        self.chatting_page.show_chatting_page()
-        self.current_page = 'chatting_page'
+                        # Создаём словарь с доступными чатами и необходимой информацией
+                        self.available_chats[chat_id] = {'name': chat_name, 'last_message': last_message, 'messages': messages_list, 'participants_count': len(participants_list),'participants': participants_list}
+                    else:
+                        print('Если вы видите это, значит знайте: это ошибка')
+            for chat_id in self.available_chats:
+                chat = self.available_chats[chat_id]
+                self.add_selectable_chat_view(chat_id,None, chat['name'], chat['last_message'])
+        self.current_page.hide()
+        self.chatting_page.show()
+        self.current_page = self.chatting_page
 
     def switch_to_sign_up_page(self) -> None:
-        self.remove_pages()
-        self.sign_up_page.show_sign_up_page()
-        self.current_page = 'sign_up_page'
+        self.current_page.hide()
+        self.sign_up_page.show()
+        self.current_page = self.sign_up_page
 
     def switch_to_adding_page(self) -> None:
-        self.remove_pages()
-        self.adding_page.show_adding_page()
-        self.current_page = 'adding_page'
+        addable_users_names = []
+
+        # Получаем имена пользователей которых можно добавить из БД
+        for user_id in self.addable_users:
+            name_response = db.users.select_by_id(id=user_id)
+            if name_response['isSuccess']:
+                addable_users_names.append(name_response['data']['name'])
+
+        self.adding_page = AddingPage(self.root, self.switch_to_chatting_page, self.on_chat_adding_submit, addable_users_names)
+        self.current_page.hide()
+        self.adding_page.show()
+        self.current_page = self.adding_page
 
     def get_current_page(self) -> str:
         return self.current_page
@@ -98,7 +108,7 @@ class App:
     def on_chat_adding_submit(self) -> None:
         chat_type = self.adding_page.chat_type_choose_menu.get()
         chat_name = self.adding_page.chat_name_entry.get()
-        participants = self.adding_page.participants_entry.get().split(',')
+        participants = self.adding_page.participants_combo_box.get().split(',')
         participants_count = len(participants)
         last_message = ''
         avatar_url = self.adding_page.avatar_url_entry.get()
@@ -182,6 +192,8 @@ class App:
                         self.chatting_page = ChattingPage(self.root, self.switch_to_adding_page, self.user)
                         self.switch_to_chatting_page()
 
+                        self.is_authorized = True
+
                         # Отладка
                         users = db.users.select_all()
                         if users['isSuccess']:
@@ -211,6 +223,8 @@ class App:
 
                     self.chatting_page = ChattingPage(self.root, self.switch_to_adding_page, self.user)
                     self.switch_to_chatting_page()
+
+                    self.is_authorized = True
             else:
                 self.sign_up_page.error_callback('Неправильный username или пароль')
         else:
@@ -219,7 +233,7 @@ class App:
 #################################################################################################
 
     def initialize(self):
-        self.start_page.show_start_page()
+        self.start_page.show()
         self.root.after(2000, self.switch_to_sign_up_page)
 
     def run(self):

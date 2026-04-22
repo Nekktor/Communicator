@@ -172,8 +172,8 @@ class SignUpPage(ctk.CTkFrame):
 
         self.error_label.configure(text='')
 
-    def show_sign_up_page(self):
+    def show(self):
         self.pack(fill="both", expand=True)
 
-    def hide_sign_up_page(self):
+    def hide(self):
         self.pack_forget()

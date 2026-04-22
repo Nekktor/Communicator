@@ -16,10 +16,10 @@ class StartPage(ctk.CTkFrame):
         # Центрируем надпись
         self.welcome_label.pack(expand=True)
 
-    def show_start_page(self):
+    def show(self):
         # Показываем саму страницу
         self.pack(fill="both", expand=True)
 
-    def hide_start_page(self):
+    def hide(self):
         # Скрываем саму страницу
         self.pack_forget()

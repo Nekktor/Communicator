@@ -142,8 +142,8 @@ class ChattingPage(ctk.CTkFrame):
         self.default_chat_frame.destroy()
         self.choose_label.destroy()
 
-    def show_chatting_page(self):
+    def show(self):
         self.pack(fill="both", expand=True)
 
-    def hide_chatting_page(self):
+    def hide(self):
         self.pack_forget()
