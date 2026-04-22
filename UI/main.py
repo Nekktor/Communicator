@@ -25,22 +25,23 @@ class App:
         self.root.geometry("800x600")
         self.root.title("Communicator")
 
-        # Инициализация классов страниц
-        self.start_page = StartPage(self.root)
-        self.chatting_page = ChattingPage(self.root, self.switch_to_adding_page)
-        self.adding_page = AddingPage(self.root, self.switch_to_chatting_page, self.on_chat_adding_submit)
-        self.sign_up_page = SignUpPage(self.root, self.register_user, self.login_user)
-
         self.user = None
         self.available_chats = {}
         self.current_page = 'start_page'
         self.current_chat = None
 
+        # Инициализация классов страниц
+        self.start_page = StartPage(self.root)
+        self.adding_page = AddingPage(self.root, self.switch_to_chatting_page, self.on_chat_adding_submit)
+        self.sign_up_page = SignUpPage(self.root, self.register_user, self.login_user)
+        self.chatting_page = None
+
     def remove_pages(self) -> None:
         self.start_page.hide_start_page()
         self.adding_page.hide_adding_page()
-        self.chatting_page.hide_chatting_page()
         self.sign_up_page.hide_sign_up_page()
+        if self.chatting_page is not None:
+            self.chatting_page.hide_chatting_page()
 
     def switch_to_chatting_page(self) -> None:
         # Получаем чаты по id пользователя
@@ -177,6 +178,8 @@ class App:
                     register_response = db.users.add(name=name, username=username, password=password)
                     if register_response['isSuccess']:
                         self.user = register_response['data']
+
+                        self.chatting_page = ChattingPage(self.root, self.switch_to_adding_page, self.user)
                         self.switch_to_chatting_page()
 
                         # Отладка
@@ -206,6 +209,7 @@ class App:
                 if login_response['isSuccess']:
                     self.user = login_response['data']
 
+                    self.chatting_page = ChattingPage(self.root, self.switch_to_adding_page, self.user)
                     self.switch_to_chatting_page()
             else:
                 self.sign_up_page.error_callback('Неправильный username или пароль')
