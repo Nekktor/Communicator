@@ -2,15 +2,8 @@ import json
 
 import websockets
 import asyncio
-#from Database.main import Session, DataBase
-#from typing import Any
-#from sqlalchemy import select, Column
-#from Database.models.participants import UserRoleEnum
-#from Database.models.messages import MessageTypeEnum
-#from datetime import date
-#
-#from Database.methods.basic_methods import BasicMethods
-#from test_database import *
+from Database.main import Session, DataBase
+
 
 class Server():
     def __init__(self):
@@ -35,7 +28,9 @@ class Server():
     async def auth(self, id_task, websocket, username):
         #print("Возвращаем OK")
         try:
-            out = username
+            out = db.users.exists("username", username)
+            print(out)
+
             #out = db.users.exists("username", username) # здесь вызвать метода проверки возможности добавления пользователя с пааметрами name, username, lastname (они будут равны = ["Никита2", "Nikitka", "Соколов2"])
             await websocket.send(json.dumps({"id_task": id_task, "response": out}))
         except Exception as e:
@@ -44,8 +39,10 @@ class Server():
         #await websocket.send(json.dumps({"id_task": id_task, "response" : "OK"}))
         #print("Вернули")
 
-    async def create_message(self, id_task, websocket, username, content):
+    async def create_message(self, id_task, websocket, chat_id, user_id, type, text, file_id):
         try:
+            out = db.messages.add(chat_id, user_id, type, text, file_id)
+
             #создание сообщения, добавлен е его в чат БД
             await websocket.send(json.dumps({"id_task": id_task, "response": "сообщение отправлено"}))
         except Exception as e:
@@ -63,22 +60,18 @@ class Server():
         except Exception as e:
             print(f"Error: {e}")
             await websocket.send(json.dumps({"id_task": id_task, "response": "Fall"}))
-"""with Session() as session:
+with Session() as session:
     db = DataBase(session)
     try:
         with session.begin():  # ← одна транзакция на всё
                 # РАБОЧАЯ ЧАСТЬ
+                #db.users.exists("username")
                 if __name__ == "__main__":
                     server = Server()
                     asyncio.run(server.start_server())
-                #health_check_users(db)
-                #health_check_chats(db)
-                #health_check_participants(db)
-                #health_check_messages(db)
-
     except Exception as e:
-        print(f"Ошибка: {e}")"""
+        print(f"Ошибка: {e}")
 
-if __name__ == "__main__":
+"""if __name__ == "__main__":
     server = Server()
-    asyncio.run(server.start_server())
+    asyncio.run(server.start_server())"""

@@ -25,7 +25,6 @@ class TaskManager():
                              self.get_response(websocket))
 
 
-
     async def process_task(self):
         while self.running:
             print(1)
@@ -66,9 +65,12 @@ class Client:
             try:
                 manager_task = asyncio.create_task(self.task_manager.start_tasks(websocket))
                 await asyncio.sleep(0.1)
-                user_input = ["Nikita"]
+                user_input = ["Nikitochka"]
                 #await self.task_manager.start_tasks(websocket)
+
                 await self.task_manager.add_task(self.auth, str(uuid.uuid4()), websocket, *user_input)
+                user_input = [1, 2, "text", "privet", 3]
+                await self.task_manager.add_task(self.create_message, str(uuid.uuid4()), websocket, *user_input)
                 #print(self.task_manager.current_task)
                 print(self.task_manager.id_response)
                 await  manager_task
@@ -84,8 +86,8 @@ class Client:
         else:
             print("Не получилось получить чаты")
 
-    async def create_message(self, id_task, websocket, username, content):
-        await websocket.send(json.dumps({"action" : "create_message", "id_task": id_task, "params" : [username, content]}))
+    async def create_message(self, id_task, websocket, chat_id, user_id, type, text, file_id):
+        await websocket.send(json.dumps({"action" : "create_message", "id_task": id_task, "params" : [chat_id, user_id, type, text, file_id]}))
         while id_task not in self.task_manager.id_response:
             await asyncio.sleep(0.1)
 
@@ -99,8 +101,8 @@ class Client:
         await websocket.send(json.dumps({"action" : "auth", "id_task": id_task, "params": [username]}))
         while id_task not in self.task_manager.id_response:
             await asyncio.sleep(0.1)
-        if self.task_manager.id_response[id_task] == username:
-            self.user_id = self.task_manager.id_response[id_task]
+        if self.task_manager.id_response[id_task] == True:
+            self.user_id = username
             print("ID (nickname) клиента:", self.user_id)
         else:
             print("Не удалось создать пользователя")
