@@ -3,7 +3,7 @@ import customtkinter as ctk
 #----------------------# Вид чата #-------------------------
 
 class ChatView(ctk.CTkFrame):
-    def __init__(self, master, chat_type: str, name: str, participants_count: int, avatar_url: str, send_message):
+    def __init__(self, master, chat_type: str, name: str, participants_count: int, avatar_url: str, send_message, see_chat_info):
         super().__init__(master, corner_radius=0, border_width=1, border_color="gray", fg_color="#696969")
 
         self.chat_type = chat_type
@@ -11,6 +11,7 @@ class ChatView(ctk.CTkFrame):
         self.participants_count = participants_count
         self.avatar_url = avatar_url
         self.send_message = send_message
+        self.see_chat_info = see_chat_info
 
         if participants_count % 10 < 5 and participants_count // 10 != 1:
             self.ending = 'а'
@@ -41,6 +42,8 @@ class ChatView(ctk.CTkFrame):
             text=str(self.participants_count) + ' участник' + self.ending,
             font=("Arial", 12)
         )
+
+        self.chat_tool_panel_frame.bind('<Button-1>', self.see_chat_info)
 
 #-----------------------------------------------------------------------
 
@@ -111,3 +114,52 @@ class MessageView(ctk.CTkFrame):
     def setup_initial_view(self):
         self.sender_label.pack(side='top', anchor='ne', pady=(5, 0), padx=10)
         self.content_label.pack(side='top', anchor='sw', pady=(0, 5), padx=10)
+
+##############################################################################################
+# Вывод информации о чате
+##############################################################################################
+
+class ChatInfoView(ctk.CTkToplevel):
+    def __init__(self, master, current_chat, participants_names: list):
+        super().__init__(master, width=200, height=400)
+        self.title("О чате")
+
+        self.current_chat = current_chat
+
+        self.chat_name = current_chat.name
+        self.participants_names = participants_names
+        self.participants_count = len(self.participants_names)
+
+        self.name_label = ctk.CTkLabel(
+            self,
+            font=("Arial", 16, 'bold'),
+            text=self.chat_name
+        )
+
+        self.participants_frame = ctk.CTkScrollableFrame(
+            self,
+            corner_radius=5,
+            label_text=f'Участники ({self.participants_count}):'
+        )
+
+        for participant in participants_names:
+            participant_label = ctk.CTkLabel(
+                self.participants_frame,
+                text=participant,
+                font=("Arial", 14)
+            )
+            participant_label.pack(side='top', anchor='nw', padx=5, pady=5)
+
+        self.setup_initial_view()
+
+        self.bind("<FocusOut>", lambda event: self.on_focus_lost(event))
+
+    def on_focus_lost(self, event):
+        if event.widget == self:
+                self.destroy()
+
+    def setup_initial_view(self):
+        self.grid_rowconfigure(1, weight=1)
+
+        self.name_label.grid(column=0, row=0, sticky='n', pady=10)
+        self.participants_frame.grid(column=0, row=1, sticky='nsew')

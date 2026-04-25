@@ -117,8 +117,8 @@ class SignUpPage(ctk.CTkFrame):
         self.password_confirm_entry.grid(row=9, column=1, columnspan=2, pady=10)
 
         # Кнопки тоже можно в сетку, чтобы они не перекрывали текст
-        self.login_button.grid(row=10, column=1, pady=20, padx=(0, 10), sticky="nsew")
-        self.submit_button.grid(row=10, column=2, pady=20, padx=(10, 0), sticky="nsew")
+        self.login_button.grid(row=10, column=1, pady=20, padx=(0, 10), sticky="w")
+        self.submit_button.grid(row=10, column=2, pady=20, padx=(10, 0), sticky="e")
 
         self.error_label.grid(row=11, column=1, columnspan=2, pady=10)
 
@@ -126,50 +126,37 @@ class SignUpPage(ctk.CTkFrame):
         self.error_label.configure(text=error)
 
     def show_login_interface(self):
-        self.name_entry_label.grid_forget()
-        self.name_entry.grid_forget()
+        # Скрываем лишнее для логина
+        self.name_entry_label.grid_remove()
+        self.name_entry.grid_remove()
+        self.password_submit_confirm_label.grid_remove()
+        self.password_confirm_entry.grid_remove()
 
-        self.password_submit_confirm_label.grid_forget()
-        self.password_confirm_entry.grid_forget()
+        # Меняем кнопку переключения
+        self.login_button.grid_remove()
+        self.register_button.grid(row=10, column=1, pady=20, padx=(0, 10), sticky="w")
 
+        # Настраиваем текст и команды
         self.password_entry_label.configure(text='Пароль')
-
-        self.login_button.grid_forget()
-        self.register_button.grid(row=10, column=1, pady=20, padx=(0, 10), sticky="nsew")
-
         self.process_label.configure(text='Вход в аккаунт')
         self.submit_button.configure(command=self.login)
-
         self.error_label.configure(text='')
 
     def show_register_interface(self):
-        for widget in self.winfo_children():
-            if widget.winfo_manager() == "grid":
-                widget.grid_forget()
+        # Возвращаем все элементы на их законные строки
+        self.name_entry_label.grid()
+        self.name_entry.grid()
+        self.password_submit_confirm_label.grid()
+        self.password_confirm_entry.grid()
 
-        self.process_label.grid(row=1, column=1, columnspan=2, pady=(40, 20))
+        # Меняем кнопку переключения обратно
+        self.register_button.grid_remove()
+        self.login_button.grid(row=10, column=1, pady=20, padx=(0, 10), sticky="w")
 
-        self.name_entry_label.grid(row=2, column=1, columnspan=2, pady=(10, 0))
-        self.name_entry.grid(row=3, column=1, columnspan=2, pady=10)
-
-        self.username_entry_label.grid(row=4, column=1, columnspan=2, pady=(10, 0))
-        self.username_entry.grid(row=5, column=1, columnspan=2, pady=10)
-
-        self.password_entry_label.grid(row=6, column=1, columnspan=2, pady=(10, 0))
-        self.password_entry.grid(row=7, column=1, columnspan=2, pady=10)
-
-        self.password_submit_confirm_label.grid(row=8, column=1, columnspan=2, pady=(10, 0))
-        self.password_confirm_entry.grid(row=9, column=1, columnspan=2, pady=10)
-
-        self.error_label.grid(row=10, column=1, columnspan=2, pady=10)
-
-        # Кнопки тоже можно в сетку, чтобы они не перекрывали текст
-        self.login_button.grid(row=11, column=1, pady=20, padx=(0, 10), sticky="nsew")
-        self.submit_button.grid(row=11, column=2, pady=20, padx=(10, 0), sticky="nsew")
-
+        # Настраиваем текст и команды
+        self.password_entry_label.configure(text='Придумайте пароль')
         self.process_label.configure(text='Создание аккаунта')
         self.submit_button.configure(command=self.register)
-
         self.error_label.configure(text='')
 
     def show(self):

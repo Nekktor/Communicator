@@ -7,9 +7,12 @@ from UI.pages.start_page import StartPage
 from UI.pages.chatting_page import ChattingPage
 from UI.pages.adding_page import AddingPage
 from UI.pages.sign_up_page import SignUpPage
-from UI.element_views.chat_view import MessageView, ChatView
+from UI.element_views.chat_view import MessageView, ChatView, ChatInfoView
 from UI.element_views.selectable_chat_view import SelectableChatView
 from Database.main_db import Session, DataBase
+
+# Обработчик ошибок со стороны UI
+from error_handler import ErrorHandler
 
 with Session() as session:
     db = DataBase(session)
@@ -27,9 +30,11 @@ class App:
 
         self.user = None
         self.available_chats = {}
-        self.current_chat = None
+        self.current_chat_view = None
+        self.current_chat_info = None
         self.is_authorized = False
-        self.addable_users = []
+        self.addable_users_names = []
+        self.addable_users_ids = []
 
         # Инициализация классов страниц
         self.start_page = StartPage(self.root)
@@ -50,15 +55,21 @@ class App:
                     chat_id = chat['id']
                     chat_name = chat['name']
                     last_message = ''
-
                     participants_list = []
+                    participants_names_list = []
+
                     participants_response = db.participants.select_all()
                     if participants_response['isSuccess']:
                         for participant in participants_response['data']:
                             if participant['chat_id'] == chat_id:
                                 participants_list.append(participant)
-                                if participant['user_id'] != self.user['id'] and participant['user_id'] not in self.addable_users:
-                                    self.addable_users.append(participant['user_id'])
+                                name_response = db.users.select_by_id(id=participant['user_id'])
+                                if name_response['isSuccess']:
+                                    name = name_response['data']['name']
+                                    participants_names_list.append(name)
+                                    if participant['user_id'] not in self.addable_users_ids and participant['user_id'] != self.user['id']:
+                                        self.addable_users_names.append(name)
+                                        self.addable_users_ids.append(participant['user_id'])
 
                     # Получаем сообщения по id чата
                     messages = db.messages.select_all_messages_by_chat_id(chat_id=chat_id)
@@ -68,7 +79,10 @@ class App:
                             last_message = messages_list[-1]['text']
 
                         # Создаём словарь с доступными чатами и необходимой информацией
-                        self.available_chats[chat_id] = {'name': chat_name, 'last_message': last_message, 'messages': messages_list, 'participants_count': len(participants_list),'participants': participants_list}
+                        self.available_chats[chat_id] = {'name': chat_name, 'last_message': last_message,
+                                                         'messages': messages_list, 'participants_count': len(participants_list),
+                                                         'participants': participants_list, 'participants_names': participants_names_list}
+
                     else:
                         print('Если вы видите это, значит знайте: это ошибка')
             for chat_id in self.available_chats:
@@ -84,15 +98,7 @@ class App:
         self.current_page = self.sign_up_page
 
     def switch_to_adding_page(self) -> None:
-        addable_users_names = []
-
-        # Получаем имена пользователей которых можно добавить из БД
-        for user_id in self.addable_users:
-            name_response = db.users.select_by_id(id=user_id)
-            if name_response['isSuccess']:
-                addable_users_names.append(name_response['data']['name'])
-
-        self.adding_page = AddingPage(self.root, self.switch_to_chatting_page, self.on_chat_adding_submit, addable_users_names)
+        self.adding_page = AddingPage(self.root, self.switch_to_chatting_page, self.on_chat_adding_submit, self.addable_users_names)
         self.current_page.hide()
         self.adding_page.show()
         self.current_page = self.adding_page
@@ -120,10 +126,10 @@ class App:
 
     # Метод для отправки сообщения
     def send_message(self) -> None:
-        message_text = self.current_chat.message_entry.get()
+        message_text = self.current_chat_view.message_entry.get()
         if message_text != '':
             self.add_message_view("text", message_text, 'Вы')
-            self.current_chat.message_entry.delete(0, "end")
+            self.current_chat_view.message_entry.delete(0, "end")
 
     # Метод для открытия чата
     def open_chat(self, chat_id) -> None:
@@ -135,6 +141,9 @@ class App:
         chat_name = self.available_chats[chat_id]['name']
         chat_messages = self.available_chats[chat_id]['messages']
         chat_participants_count = self.available_chats[chat_id]['participants_count']
+        chat_participants_names = self.available_chats[chat_id]['participants_names']
+
+        self.current_chat_info = {'type': 'group', 'name': chat_name, 'participants_names': chat_participants_names,'participants_count': chat_participants_count}
 
         self.add_chat_view('group', chat_name, chat_participants_count)
 
@@ -158,9 +167,9 @@ class App:
 
     # Добавление вида выбранного чата (тип чата, имя чата, количество участников)
     def add_chat_view(self, chat_type: str, name: str, participants_count: int):
-        self.current_chat = ChatView(self.chatting_page, chat_type, name, participants_count, None, self.send_message)
+        self.current_chat_view = ChatView(self.chatting_page, chat_type, name, participants_count, None, self.send_message, self.see_chat_info)
         self.chatting_page.on_chat_selection()
-        self.current_chat.grid(column=1, row=0, sticky="nsew")
+        self.current_chat_view.grid(column=1, row=0, sticky="nsew")
 
     # Добавление вида чата на панели списка чатов
     def add_selectable_chat_view(self, chat_id: int, avatar_url: str, name: str, last_message: str) -> None:
@@ -170,8 +179,12 @@ class App:
 
     # Добавление вида сообщения
     def add_message_view(self, content_type: str, content: str, sender_name: str) -> None:
-        message = MessageView(self.current_chat.messages_frame, content_type, content, sender_name)
+        message = MessageView(self.current_chat_view.messages_frame, content_type, content, sender_name)
         message.pack(side='top', anchor='se', pady=5, padx=5, expand=True)
+
+    def see_chat_info(self, event) -> None:
+        current_chat_info_window = ChatInfoView(self.chatting_page, self.current_chat_view, self.current_chat_info['participants_names'])
+        current_chat_info_window.focus()
 
 #################################################################################################
     # Функции для авторизации
@@ -235,6 +248,9 @@ class App:
     def initialize(self):
         self.start_page.show()
         self.root.after(2000, self.switch_to_sign_up_page)
+
+        # Тест окна для отображения ошибок
+        # error = ErrorHandler(self.root, 'Ошибка!')
 
     def run(self):
         self.initialize()
