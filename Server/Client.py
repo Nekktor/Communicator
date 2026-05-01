@@ -96,16 +96,31 @@ class Client:
         else:
             print("Не получилось отправить сообщение")
 
-    async def auth(self, id_task, websocket, username):
+    async def registration(self, id_task, websocket, name, username, password):
         #print("Отправка")
-        await websocket.send(json.dumps({"action" : "auth", "id_task": id_task, "params": [username]}))
+        await websocket.send(json.dumps({"action" : "registration", "id_task": id_task, "params": [name, username, password]}))
         while id_task not in self.task_manager.id_response:
             await asyncio.sleep(0.1)
+
         if self.task_manager.id_response[id_task] == True:
             self.user_id = username
             print("ID (nickname) клиента:", self.user_id)
+            return self.task_manager.id_response[id_task]
         else:
             print("Не удалось создать пользователя")
+
+    async def auth(self, id_task, websocket, username, password):
+        await websocket.send(json.dumps({"action" : "auth", "id_task" : id_task, "params" : [username, password]}))
+        while id_task not in self.task_manager.id_response:
+            await asyncio.sleep(0.1)
+
+        if "Error" not in self.task_manager.id_response[id_task]:
+            self.user_id = username
+            return self.task_manager.id_response[id_task]
+        else:
+            print("Ошибка")
+
+    
 
 
 if __name__ == "__main__":
